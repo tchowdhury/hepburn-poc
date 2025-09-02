@@ -1,0 +1,20 @@
+{
+ "abn":"12345",
+ "accno":"12345",
+ "name":"Ballarat Bolts & Fasteners Pty Ltd",
+ "invoiceno":"227975",
+ "amount":35.84,
+ "vendor":"??",
+ "lineitems": [
+	{
+	 "id":"353008",
+	 "description":"Lug Link Clevis GR70 8mm",
+	 "amount":35.84
+	},
+	{
+	 "id":"353009",
+	 "description":"Lug Link Clevis GR70 98mm",
+	 "amount":31.84
+	}
+ ]
+}
