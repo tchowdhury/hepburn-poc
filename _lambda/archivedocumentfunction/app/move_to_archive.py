@@ -20,8 +20,7 @@ def lambda_handler(event, _):
     logger.info(json.dumps(event))
 
     
-    body = event.get("Payload", {}).get("body", "")
-    body_dict = json.loads(body)
+    body_dict = event.get("Payload", {})
     s3_path = body_dict.get("s3_path", "")
     mime_type = body_dict.get("mime_type", "")
     s3_bucket = s3_path.split('/')[2]

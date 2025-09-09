@@ -1,0 +1,32 @@
+{
+    "default": [
+        {"Text": "What is the ABN?", "Alias": "abn", "Pages": ["*"]},
+        {"Text": "What is the account number?", "Alias": "accno", "Pages": ["*"]},
+        {"Text": "What is the supplier name?", "Alias": "name", "Pages": ["*"]},
+        {"Text": "What is the invoice number?", "Alias": "invoiceno", "Pages": ["*"]},
+        {"Text": "What is the invoice date?", "Alias": "invoicedate", "Pages": ["*"]},
+        {"Text": "What is the due date?", "Alias": "due_date", "Pages": ["*"]},
+        {"Text": "What is the total amount including GST?", "Alias": "amount_Inc_GST", "Pages": ["*"]},
+        {"Text": "What is the total amount excluding GST?", "Alias": "amount_EX_GST", "Pages": ["*"]},
+        {"Text": "What is the GST amount?", "Alias": "amount_GST", "Pages": ["*"]},
+        {"Text": "What is the purchase order number?", "Alias": "purchase order", "Pages": ["*"]},
+        {"Text": "What is the bank name?", "Alias": "Bank_Name", "Pages": ["*"]},
+        {"Text": "What is the bank BSB?", "Alias": "Bank_BSB", "Pages": ["*"]},
+        {"Text": "What is the bank account number?", "Alias": "Bank_Acc", "Pages": ["*"]}
+    ],
+    "acme-industries": [
+        {"Text": "Provide the ABN", "Alias": "abn", "Pages": ["*"]},
+        {"Text": "Supplier account number", "Alias": "accno", "Pages": ["*"]},
+        {"Text": "Supplier name", "Alias": "name", "Pages": ["*"]},
+        {"Text": "Invoice No", "Alias": "invoiceno", "Pages": ["*"]},
+        {"Text": "Invoice Date", "Alias": "invoicedate", "Pages": ["*"]},
+        {"Text": "Due Date", "Alias": "due_date", "Pages": ["*"]},
+        {"Text": "Total including GST", "Alias": "amount_Inc_GST", "Pages": ["*"]},
+        {"Text": "Subtotal excluding GST", "Alias": "amount_EX_GST", "Pages": ["*"]},
+        {"Text": "GST total", "Alias": "amount_GST", "Pages": ["*"]},
+        {"Text": "PO number", "Alias": "purchase order", "Pages": ["*"]},
+        {"Text": "Bank name", "Alias": "Bank_Name", "Pages": ["*"]},
+        {"Text": "BSB", "Alias": "Bank_BSB", "Pages": ["*"]},
+        {"Text": "Bank account number", "Alias": "Bank_Acc", "Pages": ["*"]}
+    ]
+}
