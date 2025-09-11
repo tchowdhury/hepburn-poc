@@ -90,7 +90,6 @@ def lambda_handler(event, _):
             'new_s3_key': new_s3_key,
             'newFileName': new_file_name,
             'classification': classification,
-            'query': query,
             'job_id': job_id,
             'status': status,
             'textract_output_s3_prefix': tmp_extract_prefix

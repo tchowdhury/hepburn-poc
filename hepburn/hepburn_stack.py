@@ -309,100 +309,58 @@ class HepburnStack(Stack):
             )
         )
 
-        #-------------
+        # ---------
 
+        # Lambda function to copy the Textract output to raw zone
+        lambda_copy_textract_output_function = lambda_.DockerImageFunction(
+            self,
+            "LambdaCopyTextractOutput",
+            code=lambda_.DockerImageCode.from_image_asset(
+                os.path.join(script_location, '../_lambda/copytextractoutputfunction')),
+            memory_size=128,
+            timeout=Duration.seconds(300),
+            architecture=lambda_.Architecture.X86_64
+        )
 
-        # # Add Pass state to wrap Payload in manifest for TextractAsync
-        # transform_for_textract = sfn.Pass(
-        #     self,
-        #     "TransformForTextract",
-        #     parameters={
-        #         "manifest": sfn.JsonPath.string_at("$.Payload")
-        #     }
-        # )
+        # Lambda task to archive the document
+        lambda_processed_task = sfn_tasks.LambdaInvoke(
+            self,
+            "RawFileProcessedTask",
+            lambda_function=lambda_copy_textract_output_function
+        )
 
-        # textract_async_task = tcdk.TextractGenericAsyncSfnTask(
-        #     self,
-        #     "TextractAsync",
-        #     s3_output_bucket=s3_output_bucket,
-        #     s3_temp_output_prefix="raw/textract-temp-output",
-        #     integration_pattern=sfn.IntegrationPattern.WAIT_FOR_TASK_TOKEN,
-        #     lambda_log_level="DEBUG",
-        #     task_timeout=Timeout.duration(Duration.hours(24)),
-        #     input=sfn.TaskInput.from_object({
-        #         "Token": sfn.JsonPath.task_token,
-        #         "ExecutionId": sfn.JsonPath.string_at('$$.Execution.Id'),
-        #         "manifest": {
-        #             "s3Path": sfn.JsonPath.string_at("$.manifest.s3_path"),
-        #             "textractFeatures": ["QUERIES", "TABLES"],
-        #             "textractQueries": sfn.JsonPath.string_at("$.manifest.query"),
-        #             "adapterconfig": {"adapter_id": adapter_id, "version": version}
-        #         }
-                
-        #     }),
-        #     result_path="$.textract_result")
+        # Add S3 permissions for dynamic queries lambda
+        lambda_copy_textract_output_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:DeleteObject"
+                ],
+                resources=[
+                    f"arn:aws:s3:::{document_bucket.bucket_name}/*"
+                ]
+            )
+        )
 
-        # # Transform data structure for TextractAsyncToJSON
-        # transform_for_json = sfn.Pass(
-        #     self,
-        #     "TransformForJSON",
-        #     parameters={
-        #         "manifest": {
-        #             "s3Path": sfn.JsonPath.string_at("$.Payload.s3_path"),
-        #                 "textractFeatures": ["QUERIES", "TABLES"],
-        #                 "textractQueries": sfn.JsonPath.string_at("$.Payload.query"),
-        #                 "adapterconfig": {"adapter_id": adapter_id, "version": version},
-        #                 "source_bucket": sfn.JsonPath.string_at("$.Payload.source_bucket"),
-        #                 "source_key": sfn.JsonPath.string_at("$.Payload.source_key"),
-        #                 "mime_type": sfn.JsonPath.string_at("$.Payload.mime_type"),
-        #                 "new_s3_key": sfn.JsonPath.string_at("$.Payload.new_s3_key"),
-        #                 "s3_bucket": sfn.JsonPath.string_at("$.Payload.s3_bucket"),
-        #                 "new_file_name": sfn.JsonPath.string_at("$.Payload.newFileName"),
-        #                 "classification": sfn.JsonPath.string_at("$.Payload.classification")
-        #         },
-        #         "textract_result": sfn.JsonPath.object_at("$.textract_result")
-        #     }
-        # )
-
-        # textract_async_to_json = tcdk.TextractAsyncToJSON(
-        #     self,
-        #     "AsyncToJSON",
-        #     s3_output_prefix= "raw/textract-json",
-        #     s3_output_bucket=s3_output_bucket,
-        #     lambda_memory_mb=3008)
-
-        # # Grant S3 permissions to the underlying Lambda functions in the Textract tasks
-        # for task in [textract_async_task, textract_async_to_json]:
-        #     for node in task.node.children:
-        #         if hasattr(node, 'role') and node.role:
-        #             node.add_to_role_policy(
-        #                 iam.PolicyStatement(
-        #                     effect=iam.Effect.ALLOW,
-        #                     actions=[
-        #                         "s3:GetObject",
-        #                         "s3:PutObject",
-        #                         "s3:DeleteObject",
-        #                         "s3:GetObjectVersion",
-        #                         "s3:ListBucket"
-        #                     ],
-        #                     resources=[
-        #                         document_bucket.bucket_arn,
-        #                         f"{document_bucket.bucket_arn}/*"
-        #                     ]
-        #                 )
-        #             )
         
-        # async_chain = sfn.Chain.start(textract_async_task).next(
-        #     transform_for_json).next(textract_async_to_json)
-        
-        #-------------
+        # Add s3:ListBucket permission for dynamic queries lambda
+        lambda_copy_textract_output_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["s3:ListBucket"],
+                resources=[f"arn:aws:s3:::{document_bucket.bucket_name}"]
+            )
+        )
+
+        # ----------
 
         workflow_chain = sfn.Chain \
             .start(decider_task) \
             .next(lambda_classify_document_task) \
             .next(lambda_move_file_to_landing_task) \
             .next(lambda_dynamic_query_task) \
-            .next(lambda_async_textract_task) 
+            .next(lambda_async_textract_task) \
+            .next(lambda_processed_task)
 
         state_machine = sfn.StateMachine(self,
                                          workflow_name,
