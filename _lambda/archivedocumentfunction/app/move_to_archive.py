@@ -22,7 +22,7 @@ def lambda_handler(event, _):
     
     body_dict = event.get("Payload", {})
     s3_path = body_dict.get("s3_path", "")
-    mime_type = body_dict.get("mime_type", "")
+    #mime_type = body_dict.get("mime_type", "")
     s3_bucket = s3_path.split('/')[2]
     source_key = body_dict.get("source_key", "")
 
@@ -35,7 +35,7 @@ def lambda_handler(event, _):
     
     destination_key = f"{archive_prefix}/{year}/{month}/{day}/{source_key.split('/')[-1]}"
 
-    logger.info(f"S3Path: {s3_path}, MimeType: {mime_type}, "
+    logger.info(f"S3Path: {s3_path},  "
                 f"S3Bucket: {s3_bucket}, "
                 f"SourceKey: {source_key}, "
                 f"DestinationKey: {destination_key}")
@@ -60,7 +60,6 @@ def lambda_handler(event, _):
             'source_key': source_key,
             's3_bucket': s3_bucket,
             'new_s3_key': new_s3_key,
-            'mime_type': mime_type,
             'destination_key': destination_key
         }
 

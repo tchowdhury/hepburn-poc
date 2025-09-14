@@ -309,7 +309,7 @@ class HepburnStack(Stack):
             )
         )
 
-        # ---------
+        
 
         # Lambda function to copy the Textract output to raw zone
         lambda_copy_textract_output_function = lambda_.DockerImageFunction(
@@ -322,14 +322,14 @@ class HepburnStack(Stack):
             architecture=lambda_.Architecture.X86_64
         )
 
-        # Lambda task to archive the document
+        # Lambda task to copy the Textract output to raw zone
         lambda_processed_task = sfn_tasks.LambdaInvoke(
             self,
             "RawFileProcessedTask",
             lambda_function=lambda_copy_textract_output_function
         )
 
-        # Add S3 permissions for dynamic queries lambda
+        # Add S3 permissions for copy Textract output lambda
         lambda_copy_textract_output_function.add_to_role_policy(
             iam.PolicyStatement(
                 actions=[
@@ -343,8 +343,7 @@ class HepburnStack(Stack):
             )
         )
 
-        
-        # Add s3:ListBucket permission for dynamic queries lambda
+        # Add s3:ListBucket permission for copy Textract output lambda
         lambda_copy_textract_output_function.add_to_role_policy(
             iam.PolicyStatement(
                 actions=["s3:ListBucket"],
@@ -354,13 +353,57 @@ class HepburnStack(Stack):
 
         # ----------
 
+        # Lambda function to process the raw Textract output and transform to final format
+        lambda_process_textract_output_function = lambda_.DockerImageFunction(
+            self,
+            "LambdaProcessTextractOutput",
+            code=lambda_.DockerImageCode.from_image_asset(
+                os.path.join(script_location, '../_lambda/processtextractoutputfunction')),
+            memory_size=128,
+            timeout=Duration.seconds(300),
+            architecture=lambda_.Architecture.X86_64
+        )
+
+        # Lambda task to process the Textract output to final format
+        lambda_raw_file_processed_task = sfn_tasks.LambdaInvoke(
+            self,
+            "FileProcessedTask",
+            lambda_function=lambda_process_textract_output_function
+        )
+
+        # Add S3 permissions for raw Textract output processing lambda
+        lambda_process_textract_output_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:DeleteObject"
+                ],
+                resources=[
+                    f"arn:aws:s3:::{document_bucket.bucket_name}/*"
+                ]
+            )
+        )
+
+        # Add s3:ListBucket permission for raw Textract output processing lambda
+        lambda_process_textract_output_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["s3:ListBucket"],
+                resources=[f"arn:aws:s3:::{document_bucket.bucket_name}"]
+            )
+        )
+
+        # ---------
+
         workflow_chain = sfn.Chain \
             .start(decider_task) \
             .next(lambda_classify_document_task) \
             .next(lambda_move_file_to_landing_task) \
             .next(lambda_dynamic_query_task) \
             .next(lambda_async_textract_task) \
-            .next(lambda_processed_task)
+            .next(lambda_processed_task) \
+            .next(lambda_raw_file_processed_task) \
+            .next(lambda_archive_document_task)
 
         state_machine = sfn.StateMachine(self,
                                          workflow_name,
