@@ -6,5 +6,6 @@
   "source_name": "accountspayable",
   "adapter_id": "ef5387fed580",
   "version": "2",
-  "jwttoken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b3BpY19uYW1lIjoiSGVwYnVyblRvcGljIiwic291cmNlX25hbWUiOiJhY2NvdW50c3BheWFibGUifQ.sCsr-mVg49EEyypA_tVpKP6a4sbxh0V-jL4x-5EFZR0"
+  "api_endpoint": "https://hepburn-shire-council.my.salesforce-sites.com/aws/services/apexrest/aws-application"
+  
 }

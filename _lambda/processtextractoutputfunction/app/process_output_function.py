@@ -9,6 +9,8 @@ import boto3
 from datetime import datetime
 import re
 from typing import Dict, Any, List, Tuple, Optional
+import random
+import string
 
 logger = logging.getLogger(__name__)
 
@@ -204,6 +206,13 @@ def _map_line_items(table: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     return items
 
+# --------------------------- Get the document ref from file name ---------------------------
+def get_prefix_or_random(newFile_name):
+    if "-" in newFile_name:
+        return newFile_name.split("-", 1)[0]
+    else:
+        return ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+
 s3 = boto3.client('s3')
 paginator = s3.get_paginator("list_objects_v2")
 file_keys = []
@@ -273,6 +282,7 @@ def lambda_handler(event, _):
             line_items = _map_line_items(candidate) if candidate else []
 
             out = dict(kv_out)
+            out["documentRef"] = get_prefix_or_random(new_file_name)
             out["lineitems"] = line_items
 
             # Save the output JSON back to S3
