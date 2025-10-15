@@ -5,7 +5,7 @@
   "topic_name": "HepburnTopic",
   "source_name": "accountspayable",
   "adapter_id": "ef5387fed580",
-  "version": "2",
+  "version": "6",
   "api_endpoint": "https://hepburn-shire-council.my.salesforce-sites.com/aws/services/apexrest/aws-application"
   
 }
