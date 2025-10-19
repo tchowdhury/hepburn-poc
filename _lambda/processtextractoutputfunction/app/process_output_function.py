@@ -258,6 +258,16 @@ def lambda_handler(event, _):
             q = _collect_query_answers(blocks)
             kv_out: Dict[str, Dict[str, Any]] = {}
             for alias, ans in q.items():
+                # add a logic if alias matches to abn and the value of 
+                # abn = 76 845 763 535 or 76845763535 then set the 
+                # abn value = null else keep the original value
+                
+                if alias.lower() == "abn":
+                    raw = ans.get("text", "")
+                    if raw in {"76 845 763 535", "76845763535"}:
+                        kv_out[alias] = {"value": None, "confidence": _pct(ans.get("confidence"))}
+                        continue
+
                 raw = ans.get("text", "")
                 conf = ans.get("confidence")
                 key_l = alias.lower()
@@ -266,6 +276,7 @@ def lambda_handler(event, _):
                 else:
                     val = raw
                 kv_out[alias] = {"value": val, "confidence": _pct(conf)}
+                
 
             #print(kv_out)
             # 2) TABLES → line items (pick a likely items table)
