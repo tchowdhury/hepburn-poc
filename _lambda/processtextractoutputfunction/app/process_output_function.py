@@ -258,15 +258,21 @@ def lambda_handler(event, _):
             q = _collect_query_answers(blocks)
             kv_out: Dict[str, Dict[str, Any]] = {}
             for alias, ans in q.items():
-                # add a logic if alias matches to abn and the value of 
-                # abn = 76 845 763 535 or 76845763535 then set the 
-                # abn value = null else keep the original value
-                
-                if alias.lower() == "abn":
-                    raw = ans.get("text", "")
-                    if raw in {"76 845 763 535", "76845763535"}:
-                        kv_out[alias] = {"value": None, "confidence": _pct(ans.get("confidence"))}
-                        continue
+                # add a logic if alias matches to abn and returns more than
+                # one value , then ignore the value which is a either 
+                # 76 845 763 535 or 76845763535 and chose the other value
+
+                if ans.get("count", 0) > 1:
+                    # If there are multiple values for ABN, choose the one that is not a placeholder
+                    abn_values = [v for v in ans.get("text", "").split() if v not in {"76 845 763 535", "76845763535"}]
+                    if abn_values:
+                        kv_out[alias] = {"value": abn_values[0], "confidence": _pct(ans.get("confidence"))}
+
+                # if alias.lower() == "abn":
+                #     raw = ans.get("text", "")
+                #     if raw in {"76 845 763 535", "76845763535"}:
+                #         kv_out[alias] = {"value": None, "confidence": _pct(ans.get("confidence"))}
+                #         continue
 
                 raw = ans.get("text", "")
                 conf = ans.get("confidence")

@@ -1,6 +1,6 @@
 {
     "default": [
-        {"Text": "What is the ABN?", "Alias": "abn", "Pages": ["*"]},
+        {"Text": "List all ABN's", "Alias": "abn", "Pages": ["*"]},
         {"Text": "What is the account number?", "Alias": "accno", "Pages": ["*"]},
         {"Text": "What is the supplier name?", "Alias": "name", "Pages": ["*"]},
         {"Text": "What is the invoice number?", "Alias": "invoiceno", "Pages": ["*"]},
